@@ -5,8 +5,6 @@ Created on Mon Jan 28 19:59:33 2019
 @author: kuttattu
 """
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 df = pd.read_csv("my_csv.csv")
 df['Learner']=df['Learner'].map({'A':0,'V':1,'K':2})
@@ -39,6 +37,7 @@ kmeans.fit(X_all)
 cluster = kmeans.predict(X_all)
 print("Cluster Result:")
 print(cluster)
+X_all['Cluster'] = cluster
 
 x=X_all.iloc[:,:-1]
 y=X_all.iloc[:,-1]
@@ -49,6 +48,9 @@ model=SVC()
 model.fit(x_train, y_train)
 pred=model.predict(x_test)
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import accuracy_score
+print("Accuracy:")
+print(accuracy_score(y_test,pred))
 print("Confusion Matrix :")
 print(confusion_matrix(y_test,pred))
 print("Classification Matrix :")
