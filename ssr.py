@@ -37,10 +37,10 @@ kmeans.fit(X_all)
 cluster = kmeans.predict(X_all)
 print("Cluster Result:")
 print(cluster)
-X_all['Cluster'] = cluster
 
 x=X_all.iloc[:,:-1]
 y=X_all.iloc[:,-1]
+x['Cluster'] = cluster
 x_train,x_test, y_train, y_test=train_test_split(x,y,test_size=0.30)
 
 from sklearn.svm import SVC
