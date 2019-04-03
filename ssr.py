@@ -30,13 +30,15 @@ def preprocess_features(X):
     
 X_all=preprocess_features(df)
 
-#print("Processed feature columns ({} total features):\n{}".format(len(X_all.columns), list(X_all.columns)))
 from sklearn.cluster import KMeans
-kmeans = KMeans(n_clusters=3)
+n_clusters=7
+kmeans = KMeans(n_clusters)
 kmeans.fit(X_all)
+centroids =(kmeans.cluster_centers_)
 cluster = kmeans.predict(X_all)
 print("Cluster Result:")
 print(cluster)
+
 
 x=X_all.iloc[:,:-1]
 y=X_all.iloc[:,-1]
@@ -55,3 +57,17 @@ print("Confusion Matrix :")
 print(confusion_matrix(y_test,pred))
 print("Classification Matrix :")
 print(classification_report(y_test, pred))
+
+
+from scipy.spatial import distance
+cluster_distance=[]
+for i in range(0,len(centroids)):
+    temp=[]
+    for c in centroids:
+        temp.append(distance.euclidean(centroids[i],c))
+    cluster_distance.append(temp)
+print(cluster_distance)
+
+
+
+
