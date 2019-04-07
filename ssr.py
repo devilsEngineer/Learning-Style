@@ -120,7 +120,6 @@ for clust in range(0,len(cluster_distance)):
             finalLearning[clust]= finalLearning[clust]+mapLearn[str(clusterDominance[key])]
 
 print("Cluster Learning Style Combination :")      
-print(finalLearning)
-
-
+for i in range(0,len(finalLearning)):
+    print("Cluster " +str(i) +" : "+finalLearning[i])
 
