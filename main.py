@@ -37,38 +37,30 @@ kmeans.fit(X_all)
 centroids =(kmeans.cluster_centers_)
 cluster = kmeans.predict(X_all)
 print("Cluster Result:")
-print(cluster)
-
+#print(cluster)
+X_all.insert(len(X_all.columns)-1,"Cluster",cluster)
+print(X_all.head())
 
 x=X_all.iloc[:,:-1]
 y=X_all.iloc[:,-1]
-x['Cluster'] = cluster
+#x['Cluster'] = cluster
 x_train,x_test, y_train, y_test=train_test_split(x,y,test_size=0.30)
 
+"""Training SVM model to predict the learner"""
 from sklearn.svm import SVC
-model=SVC()
-model.fit(x_train, y_train)
-pred=model.predict(x_test)
-from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.metrics import accuracy_score
-print("Accuracy:")
-print(accuracy_score(y_test,pred))
-print("Confusion Matrix :")
-print(confusion_matrix(y_test,pred))
-print("Classification Matrix :")
-print(classification_report(y_test, pred))
+svmModel=SVC()
+svmModel.fit(x_train, y_train)
 
+'''After training combining y_train with x_train'''
 y_train=y_train.to_frame()
-y_test=y_test.to_frame()
-bigdata=pd.DataFrame()
-bigdata['Cluster'] = (x_train['Cluster'])
-bigdata['Learner'] = (y_train['Learner'])
+x_train['Learner']=(y_train['Learner'])
+print(x_train.head())
 
 """Finding learning style frequency in each cluster"""
 clusterFreq=[]
 for i in range(0,n_clusters):
     temp=[0,0,0]
-    for index,j in bigdata.iterrows():
+    for index,j in x_train.iterrows():
         if(i==j['Cluster']):
             temp[j['Learner']]+=1
     clusterFreq.append(temp)       
@@ -118,8 +110,45 @@ for clust in range(0,len(cluster_distance)):
     for key in thresholdIndex:
         if(mapLearn[str(clusterDominance[key])] not in finalLearning[clust]):
             finalLearning[clust]= finalLearning[clust]+mapLearn[str(clusterDominance[key])]
-
 print("Cluster Learning Style Combination :")      
 for i in range(0,len(finalLearning)):
     print("Cluster " +str(i) +" : "+finalLearning[i])
+    
+"""Adding combination value to x_train"""
+x_train.insert(len(x_train.columns),"Combination","NA")
+for index,j in x_train.iterrows():
+        x_train.loc[index, 'Combination']=''.join(sorted(finalLearning[j['Cluster']]))
+#bigdata['Learner']=bigdata['Learner'].map({'A':0,'V':1,'K':2})
+"""printing training data with combination"""
+print(x_train.head())
+
+
+"""prediction for learner"""
+pred=svmModel.predict(x_test)
+from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import accuracy_score
+print("Accuracy for learner:")
+print(accuracy_score(y_test,pred))
+print("Confusion Matrix for learner:")
+print(confusion_matrix(y_test,pred))
+print("Classification Matrix for learner:")
+print(classification_report(y_test, pred))
+
+
+"""training the model for combination using x_train"""
+y_CombinationTrain=x_train["Combination"]
+x_CombinationTrain=pd.DataFrame()
+x_CombinationTrain['Cluster']=x_train["Cluster"]
+x_CombinationTrain['Learner']=x_train["Learner"]
+x_CombinationTest=pd.DataFrame()
+x_CombinationTest['Cluster']=x_test["Cluster"]
+x_CombinationTest['Learner']=pred
+from sklearn.naive_bayes import GaussianNB 
+naiveModel = GaussianNB() 
+naiveModel.fit(x_CombinationTrain, y_CombinationTrain) 
+  
+"""Predictions on the test data for combinations"""
+combinationPred = naiveModel.predict(x_CombinationTest) 
+print(combinationPred)
+
 
