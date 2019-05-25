@@ -6,7 +6,14 @@ Created on Mon Jan 28 19:59:33 2019
 """
 import pandas as pd
 from sklearn.model_selection import train_test_split
+import time
+from pieChart import drawPieChart
+import collections
+
+start = time.time()
 df = pd.read_csv("my_csv.csv")
+initialCount=df['Learner'].value_counts().to_dict()
+drawPieChart(list(initialCount.keys()),list(initialCount.values()),'initial.png')
 df['Learner']=df['Learner'].map({'A':0,'V':1,'K':2})
 #print(df)
 def preprocess_features(X):
@@ -35,6 +42,8 @@ n_clusters=21
 kmeans = KMeans(n_clusters)
 kmeans.fit(X_all)
 centroids =(kmeans.cluster_centers_)
+
+
 cluster = kmeans.predict(X_all)
 print("Cluster Result:")
 #print(cluster)
@@ -46,10 +55,10 @@ y=X_all.iloc[:,-1]
 #x['Cluster'] = cluster
 x_train,x_test, y_train, y_test=train_test_split(x,y,test_size=0.30)
 
-"""Training SVM model to predict the learner"""
-from sklearn.svm import SVC
-svmModel=SVC()
-svmModel.fit(x_train, y_train)
+"""Training Logestic model to predict the learner"""
+from sklearn.linear_model import LogisticRegression
+model = LogisticRegression()
+model.fit(x_train, y_train)
 
 '''After training combining y_train with x_train'''
 y_train=y_train.to_frame()
@@ -124,7 +133,7 @@ print(x_train.head())
 
 
 """prediction for learner"""
-pred=svmModel.predict(x_test)
+pred=model.predict(x_test)
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.metrics import accuracy_score
 print("Accuracy for learner:")
@@ -146,9 +155,33 @@ x_CombinationTest['Learner']=pred
 from sklearn.naive_bayes import GaussianNB 
 naiveModel = GaussianNB() 
 naiveModel.fit(x_CombinationTrain, y_CombinationTrain) 
+
+from sklearn.tree import DecisionTreeClassifier
+clf = DecisionTreeClassifier()
+clf = clf.fit(x_CombinationTrain, y_CombinationTrain)
   
 """Predictions on the test data for combinations"""
 combinationPred = naiveModel.predict(x_CombinationTest) 
 print(combinationPred)
+
+
+trainCount=y_CombinationTrain.value_counts().to_dict()
+
+testCount=collections.Counter(combinationPred)
+print(list(trainCount.values()))
+print(list(testCount.values()))
+
+for trainkey in trainCount:
+    for testkey in testCount:
+        if(trainkey==testkey):
+            trainCount[trainkey]=trainCount[trainkey]+testCount[trainkey]
+print(list(trainCount.values()))
+
+drawPieChart(list(trainCount.keys()),list(trainCount.values()),'final.png')
+end = time.time()
+print(end - start)
+
+
+
 
 
