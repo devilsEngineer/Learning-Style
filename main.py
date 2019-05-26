@@ -9,6 +9,8 @@ from sklearn.model_selection import train_test_split
 import time
 from pieChart import drawPieChart
 import collections
+from os import system
+from sklearn import tree
 
 start = time.time()
 df = pd.read_csv("my_csv.csv")
@@ -38,7 +40,7 @@ def preprocess_features(X):
 X_all=preprocess_features(df)
 
 from sklearn.cluster import KMeans
-n_clusters=21
+n_clusters=51
 kmeans = KMeans(n_clusters)
 kmeans.fit(X_all)
 centroids =(kmeans.cluster_centers_)
@@ -56,8 +58,8 @@ y=X_all.iloc[:,-1]
 x_train,x_test, y_train, y_test=train_test_split(x,y,test_size=0.30)
 
 """Training Logestic model to predict the learner"""
-from sklearn.linear_model import LogisticRegression
-model = LogisticRegression()
+from sklearn import svm
+model = svm.SVC()
 model.fit(x_train, y_train)
 
 '''After training combining y_train with x_train'''
@@ -157,15 +159,22 @@ naiveModel = GaussianNB()
 naiveModel.fit(x_CombinationTrain, y_CombinationTrain) 
 
 from sklearn.tree import DecisionTreeClassifier
-clf = DecisionTreeClassifier()
+clf = DecisionTreeClassifier(criterion = "entropy")
+print(clf)
 clf = clf.fit(x_CombinationTrain, y_CombinationTrain)
+
+feature_names = ['Cluster','Learner']
+dotfile = open("dtree.dot", 'w')
+dotfile = tree.export_graphviz(clf, out_file = dotfile, feature_names = feature_names)
+system("dot -Tpng .dot -o dtree.png")
+
   
 """Predictions on the test data for combinations"""
-combinationPred = naiveModel.predict(x_CombinationTest) 
+combinationPred = clf.predict(x_CombinationTest) 
 print(combinationPred)
 
-
 trainCount=y_CombinationTrain.value_counts().to_dict()
+
 
 testCount=collections.Counter(combinationPred)
 print(list(trainCount.values()))
