@@ -202,7 +202,7 @@ print(mappedData)
 
 
 end = time.time()
-print("Time taken for execution - > "+end - start+" seconds")
+print("Time taken for execution - > "+str(end - start)+" seconds")
 
 
 
